@@ -1,0 +1,116 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource commerce_db {
+    provider = "postgresql"
+    url      = env("POSTGRES_URI")
+}
+model Booking {
+    id          String   @id @default(uuid())
+    user        String
+    service_id  String
+    employee_id String
+    start_time  DateTime
+    end_time    DateTime
+    note        String
+    status      String
+    is_paid     Boolean
+
+    created_at DateTime  @default(now())
+    updated_at DateTime  @updatedAt
+    deleted_at DateTime?
+
+    Service  Services @relation(fields: [service_id], references: [id])
+    Employee Employee @relation(fields: [employee_id], references: [id])
+}
+model Employee {
+    id         String @id @default(uuid())
+    first_name String
+    last_name  String
+    email      String
+    work_days  String[]
+    work_shift String[]
+    services   EmployeeService[]
+
+    created_at DateTime  @default(now())
+    updated_at DateTime  @updatedAt
+    deleted_at DateTime?
+    Booking    Booking[]
+}
+model EmployeeService {
+    employee_id String
+    service_id  String
+    employee    Employee @relation(fields: [employee_id], references: [id])
+    service     Services @relation(fields: [service_id], references: [id])
+
+    @@id([employee_id, service_id])
+}
+model Review {
+    id          String   @id @default(uuid())
+    type        String   @default("booking")
+    service_id  String // Foreign key referencing the service this review is for
+    user_id     String // ID of the user who created the review
+    description String
+    rating      Float // Assuming rating can be a decimal number
+    created_at  DateTime @default(now())
+    updated_at  DateTime @updatedAt
+
+    // Define relationships
+    Service Services @relation(fields: [service_id], references: [id])
+}
+model Services {
+    id           String            @id @default(uuid())
+    name         String            @unique
+    description  String
+    price        Float
+    rating       Float             @default(0)
+    views        Int               @default(0)
+    images       String[]          @default([])
+    time_service ServiceTime?
+    domain       String
+    created_at   DateTime          @default(now())
+    updated_at   DateTime          @updatedAt
+    deleted_at   DateTime?
+    Voucher      Voucher[]
+    Review       Review[]
+    employees    EmployeeService[]
+    Booking      Booking[]
+}
+model ServiceTime {
+    id          String @id @default(uuid())
+    start_time  String
+    end_time    String
+    duration    Int
+    break_start String
+    break_end   String
+
+    // relation one-to-one with Services
+    service    Services @relation(fields: [service_id], references: [id])
+    service_id String   @unique
+
+    created_at DateTime  @default(now())
+    updated_at DateTime  @updatedAt
+    deleted_at DateTime?
+}
+model Voucher {
+    id                 String   @id @default(uuid())
+    type               String   @default("booking")
+    service_id         String // Foreign key referencing the service this voucher belongs to
+    voucher_name       String
+    voucher_code       String
+    max_discount_value Float
+    min_app_value      Float
+    discount_percent   Float
+    expired_time       DateTime
+    updated_at         DateTime @updatedAt
+    created_at         DateTime @default(now())
+
+    Service Services @relation(fields: [service_id], references: [id])
+}

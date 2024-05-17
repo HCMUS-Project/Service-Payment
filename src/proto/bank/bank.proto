@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package bank;
+
+service BankService {
+    rpc GetBank (ListBankResquest) returns (ListBankResponse); 
+}
+
+message Bank {
+    string name = 1;
+    string code = 2;
+}
+
+message ListBankResponse {
+    repeated Bank banks = 1;
+}
+
+message ListBankResquest {}
