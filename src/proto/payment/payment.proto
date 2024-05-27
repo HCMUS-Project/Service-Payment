@@ -5,7 +5,19 @@ package payment;
 import "auth/user_token.proto";
 
 service PaymentService {
-//   rpc CreatePayment(CreatePaymentRequest) returns (CreatePaymentResponse);
-//   rpc GetPayment(GetPaymentRequest) returns (GetPaymentResponse);
-//   rpc ListPayments(ListPaymentsRequest) returns (ListPaymentsResponse);
+    rpc CreatePaymentUrl(CreatePaymentUrlRequest) returns (CreatePaymentUrlResponse);
+}
+
+message CreatePaymentUrlRequest {
+    string user_id = 1;
+    string payment_method_id = 2;
+    string amount = 3; 
+    repeated string order_products_id = 4;
+    repeated string order_booking_id = 5;
+    string description = 6;
+    string vnp_return_url = 7;
+} 
+
+message CreatePaymentUrlResponse {
+    string link_payment = 1;
 }

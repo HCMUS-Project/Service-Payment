@@ -160,7 +160,7 @@ export class VNPay {
         );
         const bankList = (await response.json()) as Bank[];
         bankList.forEach(
-            (b) =>
+            b =>
                 (b.logo_link = resolveUrlString(
                     this.globalDefaultConfig.vnpayHost ?? VNPAY_GATEWAY_SANDBOX_HOST,
                     b.logo_link.slice(1),
@@ -520,7 +520,7 @@ export class VNPay {
             vnp_IpAddr,
             vnp_OrderInfo,
         ]
-            .map((a) => a.toString())
+            .map(a => a.toString())
             .join('|');
         stringToHashOfRequest = stringToHashOfRequest.replace(/undefined/g, '');
 
@@ -628,7 +628,7 @@ export class VNPay {
         if (options?.logger && 'fields' in options.logger) {
             const { type, fields } = options.logger;
 
-            Object.keys(data).forEach((key) => {
+            Object.keys(data).forEach(key => {
                 const keyAssert = key as unknown as LoggerFields;
                 if (
                     (type === 'omit' && fields.includes(keyAssert)) ||
