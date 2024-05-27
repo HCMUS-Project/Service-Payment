@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package payment;
+
+import "auth/user_token.proto";
+
+service PaymentService {
+//   rpc CreatePayment(CreatePaymentRequest) returns (CreatePaymentResponse);
+//   rpc GetPayment(GetPaymentRequest) returns (GetPaymentResponse);
+//   rpc ListPayments(ListPaymentsRequest) returns (ListPaymentsResponse);
+}

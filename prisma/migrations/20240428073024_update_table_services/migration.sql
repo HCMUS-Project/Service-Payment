@@ -1,3 +1,0 @@
--- AlterTable
-ALTER TABLE "Services" ALTER COLUMN "rating" SET DEFAULT 0,
-ALTER COLUMN "views" SET DEFAULT 0;

@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 import "bank/bank.proto";
+import "payment/payment_method.proto";
 
 package main;
 

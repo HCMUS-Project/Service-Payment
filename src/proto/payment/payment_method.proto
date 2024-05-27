@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+package paymentMethod;
+
+import "auth/user_token.proto";
+
+service PaymentMethodService {
+    rpc CreatePaymentMethod (CreatePaymentMethodRequest) returns (CreatePaymentMethodResponse);
+    rpc GetPaymentMethod (GetPaymentMethodRequest) returns (GetPaymentMethodResponse);
+    rpc UpdatePaymentMethod (UpdatePaymentMethodRequest) returns (UpdatePaymentMethodResponse);
+    rpc DeletePaymentMethod (DeletePaymentMethodRequest) returns (DeletePaymentMethodResponse);
+    rpc ListPaymentMethod (ListPaymentMethodRequest) returns (ListPaymentMethodResponse);
+}
+
+message CreatePaymentMethodRequest {
+    string type = 1;
+    optional bool status = 2;
+    userToken.User user = 3;
+}
+
+message CreatePaymentMethodResponse {
+    string id = 1;
+    string type = 2;
+    bool status = 3;
+    string domain = 4;
+}
+
+message GetPaymentMethodRequest {
+    string id = 1;
+    userToken.User user = 2;
+}
+
+message GetPaymentMethodResponse {
+    string id = 1;
+    string type = 2;
+    bool status = 3;
+    string domain = 4;
+}
+
+message UpdatePaymentMethodRequest {
+    string id = 1;
+    string type = 2;
+    optional bool status = 3;
+    userToken.User user = 4;
+}
+
+message UpdatePaymentMethodResponse {
+    string id = 1;
+    string type = 2;
+    bool status = 3;
+    string domain = 4;
+}
+
+message DeletePaymentMethodRequest {
+    string id = 1;
+    userToken.User user = 2;
+}
+
+message DeletePaymentMethodResponse {
+    string result = 1;
+}
+
+message ListPaymentMethodRequest {
+    userToken.User user = 1;
+}
+
+message ListPaymentMethodResponse {
+    repeated GetPaymentMethodResponse payment_methods = 1;
+}
