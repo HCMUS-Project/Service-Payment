@@ -1,4 +1,4 @@
-import timezone from 'moment-timezone';
+import * as moment from 'moment-timezone';
 import {
     VNPAY_GATEWAY_SANDBOX_HOST,
     PAYMENT_ENDPOINT,
@@ -192,7 +192,7 @@ export class VNPay {
         dataToBuild.vnp_Amount = dataToBuild.vnp_Amount * 100;
 
         if (!isValidVnpayDateFormat(dataToBuild?.vnp_CreateDate ?? 0)) {
-            const timeGMT7 = timezone(new Date()).tz('Asia/Ho_Chi_Minh').format();
+            const timeGMT7 = moment(new Date()).tz('Asia/Ho_Chi_Minh').format();
             dataToBuild.vnp_CreateDate = dateFormat(new Date(timeGMT7), 'yyyyMMddHHmmss');
         }
 

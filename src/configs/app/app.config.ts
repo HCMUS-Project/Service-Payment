@@ -8,4 +8,5 @@ export default () => ({
     organization: process.env.ORGANIZATION || 'NestJS',
     context: process.env.CONTEXT || 'NestJS',
     app: process.env.APP || 'api',
+    env: process.env.ENV || 'dev',
 });

@@ -9,9 +9,9 @@ service PaymentService {
 }
 
 message CreatePaymentUrlRequest {
-    string user_id = 1;
+    userToken.User user = 1;
     string payment_method_id = 2;
-    string amount = 3; 
+    float amount = 3; 
     repeated string order_products_id = 4;
     repeated string order_booking_id = 5;
     string description = 6;
@@ -19,5 +19,5 @@ message CreatePaymentUrlRequest {
 } 
 
 message CreatePaymentUrlResponse {
-    string link_payment = 1;
+    string payment_url = 1;
 }
