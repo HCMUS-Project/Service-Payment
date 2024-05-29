@@ -2,8 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { VnPayFactoryService } from './vnpay.service';
 import { HashAlgorithm, VnpLocale, ProductCode, VNPayConfig } from 'src/util/vnpay/src';
 import {
+    ICallbackVnPayRequest,
+    ICallbackVnPayResponse,
     ICreatePaymentUrlRequest,
     ICreatePaymentUrlResponse,
+    IGetTransactionRequest,
+    IGetTransactionResponse,
 } from './interfaces/payment.interface';
 import { getEnumKeyByEnumValue } from 'src/util/convert_enum/get_key_enum';
 import {
@@ -14,6 +18,8 @@ import {
 import { Role } from 'src/proto_build/auth/user_token_pb';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from 'src/core/prisma/prisma.service';
+import { DataFilter } from './interfaces/data.filter.interface';
+import { CallBackVnpayResponse } from 'src/proto_build/payment/payment_pb';
 
 @Injectable()
 export class PaymentService {
@@ -65,7 +71,7 @@ export class PaymentService {
                 vnp_TxnRef: billId,
                 vnp_OrderInfo: dataPayment.description,
                 vnp_OrderType: orderType,
-                vnp_ReturnUrl: this.configService.get('vnpayReturnUrl'),
+                vnp_ReturnUrl: dataPayment.vnpReturnUrl,
                 vnp_Locale: VnpLocale.VN,
             });
         } catch (error) {
@@ -95,6 +101,31 @@ export class PaymentService {
 
         return {
             paymentUrl: urlString,
+        };
+    }
+
+    async callbackPaymentUrl(data: ICallbackVnPayRequest): Promise<ICallbackVnPayResponse> {
+        console.log('data', data);
+        return {
+            status: 'success',
+            message: 'success',
+        };
+    }
+
+    async getTransaction(data: IGetTransactionRequest): Promise<IGetTransactionResponse> {
+        // const { user, ...dataFilter } = data;
+        // // check role user
+        // if (user.role.toString() !== getEnumKeyByEnumValue(Role, Role.USER))
+        //     delete dataFilter.userEmail;
+        // let query: DataFilter = { domain: user.domain };
+        // if (dataFilter.userEmail) query = { ...query, user: dataFilter.userEmail };
+        // if (dataFilter.orderId) query = { ...query, orderId: dataFilter.orderId };
+        // if (dataFilter.paymentMethodId)
+        //     query = { ...query, paymentMethodId: dataFilter.paymentMethodId };
+        // if (dataFilter.status) query = { ...query, status: dataFilter.status };
+        // if
+        return {
+            transactions: [],
         };
     }
 }

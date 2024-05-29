@@ -6,6 +6,8 @@ import "auth/user_token.proto";
 
 service PaymentService {
     rpc CreatePaymentUrl(CreatePaymentUrlRequest) returns (CreatePaymentUrlResponse);
+    rpc CallbackVnPay(CallbackVnpayRequest) returns (CallBackVnpayResponse);
+    rpc GetTransaction(GetTransactionRequest) returns (GetTransactionResponse);
 }
 
 message CreatePaymentUrlRequest {
@@ -20,4 +22,54 @@ message CreatePaymentUrlRequest {
 
 message CreatePaymentUrlResponse {
     string payment_url = 1;
+}
+
+message CallbackVnpayRequest {
+    string vnp_Amount = 1;
+    string vnp_BankCode = 2;
+    string vnp_BankTranNo = 3;
+    string vnp_CardType = 4;
+    string vnp_OrderInfo = 5;
+    string vnp_PayDate = 6;
+    string vnp_ResponseCode = 7;
+    string vnp_TmnCode = 8;
+    string vnp_TransactionNo = 9;
+    string vnp_TransactionStatus = 10;
+    string vnp_TxnRef = 11;
+    string vnp_SecureHash = 12;
+}
+
+message CallBackVnpayResponse {
+    string message = 1;
+    string status = 2;
+}
+
+message GetTransactionRequest {
+    userToken.User user = 1;
+    optional string user_email = 2;
+    optional string order_id = 4;
+    optional string status = 5;
+    optional string payment_method_id = 6;
+    optional string start_date = 7;
+    optional string end_date = 8;
+    optional float min_amount = 9;
+    optional float max_amount = 10;
+}
+
+message GetTransactionResponse {
+    repeated Transaction transactions = 1;
+}
+
+message Transaction {
+    string id = 1;
+    string user = 2;
+    string domain = 3;
+    string order_id = 4;
+    double amount = 5;
+    string description = 6;
+    string status = 7;
+    int64 created_at = 9;
+    string bill_id = 11;
+    string payment_method_id = 12;
+    string payment_method_name = 13;
 }
