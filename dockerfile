@@ -22,7 +22,7 @@ RUN yarn gen:proto
 RUN yarn build
 
 # Expose the port your app runs on
-EXPOSE 3003
+EXPOSE 3005
 
 # Copy entrypoint script and grant execution permissions
 COPY entrypoint.sh /usr/local/bin/
