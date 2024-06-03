@@ -6,6 +6,8 @@ import {
     ICallbackVnPayResponse,
     ICreatePaymentUrlRequest,
     ICreatePaymentUrlResponse,
+    IGetTransactionRequest,
+    IGetTransactionResponse,
 } from './interfaces/payment.interface';
 
 @Controller()
@@ -20,5 +22,10 @@ export class PaymentController {
     @GrpcMethod('PaymentService', 'CallbackVnPay')
     async callbackVnPay(data: ICallbackVnPayRequest): Promise<ICallbackVnPayResponse> {
         return await this.paymentService.callbackPaymentUrl(data);
+    }
+
+    @GrpcMethod('PaymentService', 'GetTransaction')
+    async getTransaction(data: IGetTransactionRequest): Promise<IGetTransactionResponse> {
+        return await this.paymentService.getTransaction(data);
     }
 }

@@ -15,6 +15,7 @@ export class GrpcExceptionFilter implements ExceptionFilter {
                 error: exception.getError(),
                 message: JSON.parse(exception.message),
             },
+            error: exception,
         });
     }
 }

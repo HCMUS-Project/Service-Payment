@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { VnPayFactoryService } from './vnpay.service';
 import { HashAlgorithm, VnpLocale, ProductCode, VNPayConfig } from 'src/util/vnpay/src';
 import {
@@ -18,8 +18,7 @@ import {
 import { Role } from 'src/proto_build/auth/user_token_pb';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from 'src/core/prisma/prisma.service';
-import { DataFilter } from './interfaces/data.filter.interface';
-import { CallBackVnpayResponse } from 'src/proto_build/payment/payment_pb';
+import Logger, { LoggerKey } from 'src/core/logger/interfaces/logger.interface';
 
 @Injectable()
 export class PaymentService {
@@ -27,11 +26,13 @@ export class PaymentService {
         private readonly vnpayService: VnPayFactoryService,
         private readonly configService: ConfigService,
         private readonly prismaService: PrismaService,
+        @Inject(LoggerKey) private readonly logger: Logger,
     ) {}
 
     async createPaymentUrl(data: ICreatePaymentUrlRequest): Promise<ICreatePaymentUrlResponse> {
         const { user, ...dataPayment } = data;
 
+        this.logger.info('dataPayment');
         // check role user
         if (user.role.toString() !== getEnumKeyByEnumValue(Role, Role.TENANT))
             throw new GrpcPermissionDeniedException('PERMISSION_DENIED');
@@ -105,27 +106,70 @@ export class PaymentService {
     }
 
     async callbackPaymentUrl(data: ICallbackVnPayRequest): Promise<ICallbackVnPayResponse> {
-        console.log('data', data);
-        return {
-            status: 'success',
-            message: 'success',
-        };
+        this.logger.info('Data callback: ', { props: data });
+
+        // const vnpay = this.vnpayService.createVnpayService();
+
+        // save payment transaction to database
+        try {
+            const txn = await this.prismaService.transactions.update({
+                where: { bill_id: data.vnpTxnRef },
+                data: {
+                    status: data.vnpResponseCode === '00' ? 'SUCCESS' : 'FAILED',
+                },
+            });
+
+            return {
+                status: 'success',
+                message: 'success',
+                urlRedirect: txn.domain,
+            };
+        } catch (error) {
+            throw error;
+        }
     }
 
     async getTransaction(data: IGetTransactionRequest): Promise<IGetTransactionResponse> {
-        // const { user, ...dataFilter } = data;
-        // // check role user
-        // if (user.role.toString() !== getEnumKeyByEnumValue(Role, Role.USER))
-        //     delete dataFilter.userEmail;
+        const { user, ...dataFilter } = data;
+
+        // check role user
+        if (user.role.toString() !== getEnumKeyByEnumValue(Role, Role.USER))
+            delete dataFilter.userEmail;
         // let query: DataFilter = { domain: user.domain };
         // if (dataFilter.userEmail) query = { ...query, user: dataFilter.userEmail };
         // if (dataFilter.orderId) query = { ...query, orderId: dataFilter.orderId };
         // if (dataFilter.paymentMethodId)
         //     query = { ...query, paymentMethodId: dataFilter.paymentMethodId };
         // if (dataFilter.status) query = { ...query, status: dataFilter.status };
-        // if
-        return {
-            transactions: [],
-        };
+        try {
+            const transactions = await this.prismaService.transactions.findMany({
+                where: {
+                    AND: [
+                        {
+                            domain: user.domain,
+                        },
+                        dataFilter.status ? { status: dataFilter.status.toUpperCase() } : {},
+                        dataFilter.orderId ? { order_id: dataFilter.orderId } : {},
+                    ],
+                },
+            });
+            return {
+                transactions: transactions.map(transaction => ({
+                    id: transaction.id,
+                    status: transaction.status,
+                    amount: transaction.amount,
+                    description: transaction.description,
+                    billId: transaction.bill_id,
+                    orderId: transaction.order_id,
+                    paymentMethodId: transaction.payment_method,
+                    user: transaction.user,
+                    domain: transaction.domain,
+                    createdAt: transaction.created_at.toISOString(),
+                    paymentMethodName: transaction.payment_method,
+                })),
+            };
+        } catch (error) {
+            throw error;
+        }
     }
 }

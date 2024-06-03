@@ -2,7 +2,7 @@ model Transactions {
     id             String        @id @default(uuid())
     user           String
     domain         String
-    bill_id        String
+    bill_id        String        @unique
     order_id       String
     amount         Float
     description    String

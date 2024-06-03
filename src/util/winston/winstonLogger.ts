@@ -3,8 +3,10 @@ import { Inject, Injectable } from '@nestjs/common';
 import Logger from '../../core/logger/interfaces/logger.interface';
 import { LogLevel } from 'src/common/enums/logger.enum';
 import { LogData } from 'src/common/interfaces/logger.interface';
+import * as path from 'path';
 
 export const WinstonLoggerTransportsKey = Symbol();
+const PROJECT_ROOT = path.join(__dirname, '..');
 
 @Injectable()
 export default class WinstonLogger implements Logger {
@@ -38,18 +40,17 @@ export default class WinstonLogger implements Logger {
                 winston.format((info, opts) => {
                     // Info contains an Error property
                     if (info.error && info.error instanceof Error) {
-                        info.stack = info.error.stack;
+                        info.stack = info.error.stack.split('\n').map(line => line.trim());
                         info.error = undefined;
                     }
 
                     info.label = `${info.organization}.${info.context}.${info.app}`;
-
                     return info;
                 })(),
                 // Add custom fields to the data property
                 winston.format.metadata({
                     key: 'data',
-                    fillExcept: ['timestamp', 'level', 'message'],
+                    fillExcept: ['timestamp', 'level', 'message', 'label'],
                 }),
                 // Format the log as JSON
                 winston.format.json(),
