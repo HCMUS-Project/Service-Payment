@@ -19,6 +19,7 @@ import { Role } from 'src/proto_build/auth/user_token_pb';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import Logger, { LoggerKey } from 'src/core/logger/interfaces/logger.interface';
+import { PaymentMethodType } from 'src/common/enums/payment.enum';
 
 @Injectable()
 export class PaymentService {
@@ -43,17 +44,19 @@ export class PaymentService {
 
         // check payment_method exist
         try {
-            if (
-                (await this.prismaService.paymentMethod.count({
-                    where: { id: dataPayment.paymentMethodId, domain: user.domain },
-                })) === 0
-            )
-                throw new GrpcInvalidArgumentException('PAYMENT_METHOD_NOT_FOUND');
+            const paymentMethod = await this.prismaService.paymentMethod.findUnique({
+                where: { id: dataPayment.paymentMethodId, domain: user.domain },
+                select: { id: true, type: true },
+            });
+            if (!paymentMethod) throw new GrpcInvalidArgumentException('PAYMENT_METHOD_NOT_FOUND');
+            // check payment method is COD
+            if (paymentMethod.type.toUpperCase() === PaymentMethodType.COD)
+                return {
+                    paymentUrl: '',
+                };
         } catch (error) {
             throw error;
         }
-
-        // TODO: check order exit
 
         // create order type with product code
         const orderType =
@@ -67,7 +70,7 @@ export class PaymentService {
         let urlString = '';
         try {
             urlString = vnpay.buildPaymentUrl({
-                vnp_Amount: dataPayment.amount,
+                vnp_Amount: Math.floor(dataPayment.amount),
                 vnp_IpAddr: this.configService.get('vnpayIpAddr'),
                 vnp_TxnRef: billId,
                 vnp_OrderInfo: dataPayment.description,
@@ -106,7 +109,7 @@ export class PaymentService {
     }
 
     async callbackPaymentUrl(data: ICallbackVnPayRequest): Promise<ICallbackVnPayResponse> {
-        this.logger.info('Data callback: ', { props: data });
+        this.logger.debug('Data callback: ', { props: data });
 
         // const vnpay = this.vnpayService.createVnpayService();
 
