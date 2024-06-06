@@ -8,7 +8,7 @@ model Transactions {
     description    String
     status         String        @default("processing")
     payment_method String
-    PaymentMethod  PaymentMethod @relation(fields: [payment_method], references: [id])
+    PaymentMethod  PaymentMethod @relation(fields: [payment_method], references: [id], onDelete: Cascade)
 
     created_at DateTime @default(now())
     updated_at DateTime @updatedAt
