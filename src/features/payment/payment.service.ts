@@ -67,6 +67,12 @@ export class PaymentService {
 
         const billId = this.vnpayService.generateBillId();
 
+        let url = new URL(dataPayment.vnpReturnUrl);
+        let vnpReturnUrl = url.origin + url.pathname;
+        let domain = url.searchParams.get('domain');
+        // vnpReturnUrl, domain = dataPayment.vnpReturnUrl
+        console.log(vnpReturnUrl, domain);
+
         let urlString = '';
         try {
             urlString = vnpay.buildPaymentUrl({
@@ -75,7 +81,8 @@ export class PaymentService {
                 vnp_TxnRef: billId,
                 vnp_OrderInfo: dataPayment.description,
                 vnp_OrderType: orderType,
-                vnp_ReturnUrl: dataPayment.vnpReturnUrl,
+                // vnp_ReturnUrl: dataPayment.vnpReturnUrl,
+                vnp_ReturnUrl: vnpReturnUrl,
                 vnp_Locale: VnpLocale.VN,
             });
         } catch (error) {
@@ -95,7 +102,9 @@ export class PaymentService {
                             ? dataPayment.orderProductsId[0]
                             : dataPayment.orderBookingId[0],
                     user: user.email,
-                    domain: user.domain,
+                    // domain: "https://facebook.com",
+                    domain: domain,
+                    // domain: dataPayment.vnpReturnUrl,
                     payment_method: dataPayment.paymentMethodId,
                 },
             });
