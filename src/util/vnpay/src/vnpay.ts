@@ -258,7 +258,6 @@ export class VNPay {
             if (!res) {
                 throw new Error('Invalid amount');
             }
-            cloneQuery.vnp_Amount = Number(cloneQuery.vnp_Amount) / 100;
         }
 
         const outputResults = {
@@ -297,7 +296,7 @@ export class VNPay {
         const result = {
             ...cloneQuery,
             ...outputResults,
-            vnp_Amount: cloneQuery.vnp_Amount / 100,
+            vnp_Amount: Number(cloneQuery.vnp_Amount) / 100,
         };
 
         if (this.isEnableLog) {

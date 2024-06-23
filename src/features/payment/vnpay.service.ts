@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { VNPay, VNPayConfig } from 'src/util/vnpay/src';
 
+const CONVERT_AMOUNT = 1000000;
+
 @Injectable()
 export class VnPayFactoryService {
     constructor(private readonly configService: ConfigService) {}
@@ -27,7 +29,7 @@ export class VnPayFactoryService {
     }
 
     generateBillId(): string {
-        const billNumber = Math.floor(Math.random() * 1000000);
+        const billNumber = Math.floor(Math.random() * CONVERT_AMOUNT);
         const createDate = new Date();
         return `${billNumber}-${createDate.getTime()}`;
     }

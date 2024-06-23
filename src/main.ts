@@ -29,5 +29,7 @@ async function bootstrap() {
 
     // Start the microservice
     await app.listen();
+
+    console.log(`🚀🚀🚀 Microservice is running on: ${host}:${port}`);
 }
 bootstrap();

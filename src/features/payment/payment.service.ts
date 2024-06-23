@@ -33,7 +33,7 @@ export class PaymentService {
     async createPaymentUrl(data: ICreatePaymentUrlRequest): Promise<ICreatePaymentUrlResponse> {
         const { user, ...dataPayment } = data;
 
-        this.logger.info('dataPayment');
+        this.logger.info('Data create payment', { props: dataPayment });
         // check role user
         if (user.role.toString() !== getEnumKeyByEnumValue(Role, Role.USER))
             throw new GrpcPermissionDeniedException('PERMISSION_DENIED');
@@ -69,9 +69,7 @@ export class PaymentService {
 
         let url = new URL(dataPayment.vnpReturnUrl);
         let vnpReturnUrl = url.origin + url.pathname;
-        let domain = url.searchParams.get('domain');
-        // vnpReturnUrl, domain = dataPayment.vnpReturnUrl
-        console.log(vnpReturnUrl, domain);
+        // vnpReturnUrl, (domain = dataPayment.vnpReturnUrl);
 
         let urlString = '';
         try {
@@ -82,7 +80,7 @@ export class PaymentService {
                 vnp_OrderInfo: dataPayment.description,
                 vnp_OrderType: orderType,
                 // vnp_ReturnUrl: dataPayment.vnpReturnUrl,
-                vnp_ReturnUrl: vnpReturnUrl,
+                vnp_ReturnUrl: 'http://localhost:3000/',
                 vnp_Locale: VnpLocale.VN,
             });
         } catch (error) {
@@ -103,7 +101,7 @@ export class PaymentService {
                             : dataPayment.orderBookingId[0],
                     user: user.email,
                     // domain: "https://facebook.com",
-                    domain: domain,
+                    domain: url.origin,
                     // domain: dataPayment.vnpReturnUrl,
                     payment_method: dataPayment.paymentMethodId,
                 },
@@ -120,25 +118,49 @@ export class PaymentService {
     async callbackPaymentUrl(data: ICallbackVnPayRequest): Promise<ICallbackVnPayResponse> {
         this.logger.debug('Data callback: ', { props: data });
 
-        // const vnpay = this.vnpayService.createVnpayService();
+        const vnpay = this.vnpayService.createVnpayService();
+
+        // check response vnpay
+        const checkIPN = vnpay.verifyIpnCall({
+            vnp_Amount: data.vnpAmount,
+            vnp_OrderInfo: data.vnpOrderInfo,
+            vnp_ResponseCode: data.vnpResponseCode,
+            vnp_TxnRef: data.vnpTxnRef,
+            vnp_BankCode: data.vnpBankCode,
+            vnp_BankTranNo: data.vnpBankTranNo,
+            vnp_CardType: data.vnpCardType,
+            vnp_PayDate: data.vnpPayDate,
+            vnp_TransactionNo: data.vnpTransactionNo,
+            vnp_SecureHash: data.vnpSecureHash,
+            vnp_SecureHashType: HashAlgorithm.SHA256,
+            vnp_TmnCode: vnpay.defaultConfig.vnp_TmnCode,
+            vnp_TransactionStatus: data.vnpTransactionStatus,
+        });
+
+        this.logger.debug('Check ipn: ', { props: checkIPN });
 
         // save payment transaction to database
-        try {
-            const txn = await this.prismaService.transactions.update({
-                where: { bill_id: data.vnpTxnRef },
-                data: {
-                    status: data.vnpResponseCode === '00' ? 'SUCCESS' : 'FAILED',
-                },
-            });
+        // try {
+        //     const txn = await this.prismaService.transactions.update({
+        //         where: { bill_id: data.vnpTxnRef },
+        //         data: {
+        //             status: data.vnpResponseCode === '00' ? 'SUCCESS' : 'FAILED',
+        //         },
+        //     });
 
-            return {
-                status: 'success',
-                message: 'success',
-                urlRedirect: txn.domain,
-            };
-        } catch (error) {
-            throw error;
-        }
+        //     return {
+        //         status: 'success',
+        //         message: 'success',
+        //         urlRedirect: txn.domain,
+        //     };
+        // } catch (error) {
+        //     throw error;
+        // }
+        return {
+            status: 'success',
+            message: 'success',
+            urlRedirect: 'https://facebook.com',
+        };
     }
 
     async getTransaction(data: IGetTransactionRequest): Promise<IGetTransactionResponse> {
