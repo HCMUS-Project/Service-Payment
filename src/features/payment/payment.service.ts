@@ -35,7 +35,7 @@ export class PaymentService {
 
         this.logger.info('dataPayment');
         // check role user
-        if (user.role.toString() !== getEnumKeyByEnumValue(Role, Role.USER))
+        if (user.role.toString() === getEnumKeyByEnumValue(Role, Role.ADMIN))
             throw new GrpcPermissionDeniedException('PERMISSION_DENIED');
 
         // check order booking or order product
