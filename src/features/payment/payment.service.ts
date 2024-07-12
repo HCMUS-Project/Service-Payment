@@ -132,7 +132,7 @@ export class PaymentService {
             });
 
             return {
-                status: 'success',
+                status: txn.status.toLowerCase(),
                 message: 'success',
                 urlRedirect: txn.domain,
             };
