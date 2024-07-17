@@ -45,7 +45,7 @@ export class PaymentService {
         // check payment_method exist
         try {
             const paymentMethod = await this.prismaService.paymentMethod.findUnique({
-                where: { id: dataPayment.paymentMethodId, domain: user.domain },
+                where: { id: dataPayment.paymentMethodId},
                 select: { id: true, type: true },
             });
             if (!paymentMethod) throw new GrpcInvalidArgumentException('PAYMENT_METHOD_NOT_FOUND');
