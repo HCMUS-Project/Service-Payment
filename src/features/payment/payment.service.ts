@@ -35,7 +35,7 @@ export class PaymentService {
 
         this.logger.info('Data create payment', { props: dataPayment });
         // check role user
-        if (user.role.toString() !== getEnumKeyByEnumValue(Role, Role.USER))
+        if (user.role.toString() === getEnumKeyByEnumValue(Role, Role.ADMIN))
             throw new GrpcPermissionDeniedException('PERMISSION_DENIED');
 
         // check order booking or order product
@@ -148,6 +148,7 @@ export class PaymentService {
         //         },
         //     });
 
+<<<<<<< HEAD
         //     return {
         //         status: 'success',
         //         message: 'success',
@@ -161,6 +162,16 @@ export class PaymentService {
             message: 'success',
             urlRedirect: 'https://facebook.com',
         };
+=======
+            return {
+                status: txn.status.toLowerCase(),
+                message: 'success',
+                urlRedirect: txn.domain,
+            };
+        } catch (error) {
+            throw error;
+        }
+>>>>>>> 97f8f887e2ee8af21e26be01028ca5041532e93c
     }
 
     async getTransaction(data: IGetTransactionRequest): Promise<IGetTransactionResponse> {
