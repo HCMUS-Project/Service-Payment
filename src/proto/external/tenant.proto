@@ -1,0 +1,25 @@
+
+syntax = "proto3";
+
+package vnpayConfig;
+
+
+service VNPayConfigService {
+    rpc GetVNPayConfigByTenantId(GetVNPayConfigByDomainRequest) returns (VNPayConfigResponse);
+}
+
+message VNPayConfig {
+    string id = 1;
+    string tenant_id = 2;
+    string tmn_code = 3;
+    string secure_secret = 4;
+    string vnpay_host = 5;
+}
+
+message GetVNPayConfigByDomainRequest {
+    string domain = 1;
+}
+
+message VNPayConfigResponse {
+    VNPayConfig vnpay_config = 1;
+}

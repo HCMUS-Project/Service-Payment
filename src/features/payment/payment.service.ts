@@ -63,7 +63,8 @@ export class PaymentService {
             dataPayment.orderProductsId.length > 0 ? ProductCode.Health_Beauty : ProductCode.Other;
 
         // create vnpay service
-        const vnpay = this.vnpayService.createVnpayService();
+        // const vnpay = await this.vnpayService.createVnpayService(user.domain);
+        const vnpay = await this.vnpayService.createVnpayService();
 
         const billId = this.vnpayService.generateBillId();
 
@@ -116,62 +117,60 @@ export class PaymentService {
     }
 
     async callbackPaymentUrl(data: ICallbackVnPayRequest): Promise<ICallbackVnPayResponse> {
-        this.logger.debug('Data callback: ', { props: data });
+        try {
+            this.logger.debug('Data callback: ', { props: data });
 
-        const vnpay = this.vnpayService.createVnpayService();
+            const vnpay = await this.vnpayService.createVnpayService();
 
-        // check response vnpay
-        const checkIPN = vnpay.verifyIpnCall({
-            vnp_Amount: data.vnpAmount,
-            vnp_OrderInfo: data.vnpOrderInfo,
-            vnp_ResponseCode: data.vnpResponseCode,
-            vnp_TxnRef: data.vnpTxnRef,
-            vnp_BankCode: data.vnpBankCode,
-            vnp_BankTranNo: data.vnpBankTranNo,
-            vnp_CardType: data.vnpCardType,
-            vnp_PayDate: data.vnpPayDate,
-            vnp_TransactionNo: data.vnpTransactionNo,
-            vnp_SecureHash: data.vnpSecureHash,
-            vnp_SecureHashType: HashAlgorithm.SHA256,
-            vnp_TmnCode: vnpay.defaultConfig.vnp_TmnCode,
-            vnp_TransactionStatus: data.vnpTransactionStatus,
-        });
+            // check response vnpay
+            const checkIPN = vnpay.verifyIpnCall({
+                vnp_Amount: data.vnpAmount,
+                vnp_OrderInfo: data.vnpOrderInfo,
+                vnp_ResponseCode: data.vnpResponseCode,
+                vnp_TxnRef: data.vnpTxnRef,
+                vnp_BankCode: data.vnpBankCode,
+                vnp_BankTranNo: data.vnpBankTranNo,
+                vnp_CardType: data.vnpCardType,
+                vnp_PayDate: data.vnpPayDate,
+                vnp_TransactionNo: data.vnpTransactionNo,
+                vnp_SecureHash: data.vnpSecureHash,
+                vnp_SecureHashType: HashAlgorithm.SHA256,
+                vnp_TmnCode: vnpay.defaultConfig.vnp_TmnCode,
+                vnp_TransactionStatus: data.vnpTransactionStatus,
+            });
 
-        this.logger.debug('Check ipn: ', { props: checkIPN });
+            this.logger.debug('Check ipn: ', { props: checkIPN });
 
-        // save payment transaction to database
-        // try {
-        //     const txn = await this.prismaService.transactions.update({
-        //         where: { bill_id: data.vnpTxnRef },
-        //         data: {
-        //             status: data.vnpResponseCode === '00' ? 'SUCCESS' : 'FAILED',
-        //         },
-        //     });
+            // save payment transaction to database
+            // try {
+            //     const txn = await this.prismaService.transactions.update({
+            //         where: { bill_id: data.vnpTxnRef },
+            //         data: {
+            //             status: data.vnpResponseCode === '00' ? 'SUCCESS' : 'FAILED',
+            //         },
+            //     });
 
-<<<<<<< HEAD
-        //     return {
-        //         status: 'success',
-        //         message: 'success',
-        //         urlRedirect: txn.domain,
-        //     };
-        // } catch (error) {
-        //     throw error;
-        // }
-        return {
-            status: 'success',
-            message: 'success',
-            urlRedirect: 'https://facebook.com',
-        };
-=======
+            //     return {
+            //         status: 'success',
+            //         message: 'success',
+            //         urlRedirect: txn.domain,
+            //     };
+            // } catch (error) {
+            //     throw error;
+            // }
             return {
-                status: txn.status.toLowerCase(),
+                status: 'success',
                 message: 'success',
-                urlRedirect: txn.domain,
+                urlRedirect: 'https://facebook.com',
             };
+            // return {
+            //     status: txn.status.toLowerCase(),
+            //     message: 'success',
+            //     urlRedirect: txn.domain,
+            // };
         } catch (error) {
             throw error;
         }
->>>>>>> 97f8f887e2ee8af21e26be01028ca5041532e93c
     }
 
     async getTransaction(data: IGetTransactionRequest): Promise<IGetTransactionResponse> {
