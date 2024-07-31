@@ -19,7 +19,7 @@ import { Role } from 'src/proto_build/auth/user_token_pb';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import Logger, { LoggerKey } from 'src/core/logger/interfaces/logger.interface';
-import { PaymentMethodType } from 'src/common/enums/payment.enum';
+import { PaymentMethodType, PaymentStatus } from 'src/common/enums/payment.enum';
 
 @Injectable()
 export class PaymentService {
@@ -45,7 +45,7 @@ export class PaymentService {
         // check payment_method exist
         try {
             const paymentMethod = await this.prismaService.paymentMethod.findUnique({
-                where: { id: dataPayment.paymentMethodId},
+                where: { id: dataPayment.paymentMethodId },
                 select: { id: true, type: true },
             });
             if (!paymentMethod) throw new GrpcInvalidArgumentException('PAYMENT_METHOD_NOT_FOUND');
@@ -116,13 +116,33 @@ export class PaymentService {
         };
     }
 
-    async callbackPaymentUrl(data: ICallbackVnPayRequest): Promise<ICallbackVnPayResponse> {
+    private async handleResultCallback(
+        data: ICallbackVnPayRequest,
+    ): Promise<ICallbackVnPayResponse> {
         try {
-            this.logger.debug('Data callback: ', { props: data });
+            const status =
+                data.vnpResponseCode === '00'
+                    ? PaymentStatus.SUCCESS.toLowerCase()
+                    : PaymentStatus.FAILED.toLowerCase();
+            const txn = await this.prismaService.transactions.findFirst({
+                where: { bill_id: data.vnpTxnRef },
+            });
 
+            if (!txn) throw new GrpcInvalidArgumentException('TRANSACTION_NOT_FOUND');
+
+            return {
+                status: status,
+                message: status,
+                urlRedirect: txn.domain,
+            };
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    private async handleCallbackIpn(data: ICallbackVnPayRequest): Promise<ICallbackVnPayResponse> {
+        try {
             const vnpay = await this.vnpayService.createVnpayService();
-
-            // check response vnpay
             const checkIPN = vnpay.verifyIpnCall({
                 vnp_Amount: data.vnpAmount,
                 vnp_OrderInfo: data.vnpOrderInfo,
@@ -141,36 +161,32 @@ export class PaymentService {
 
             this.logger.debug('Check ipn: ', { props: checkIPN });
 
-            // save payment transaction to database
-            // try {
-            //     const txn = await this.prismaService.transactions.update({
-            //         where: { bill_id: data.vnpTxnRef },
-            //         data: {
-            //             status: data.vnpResponseCode === '00' ? 'SUCCESS' : 'FAILED',
-            //         },
-            //     });
+            this.prismaService.transactions.update({
+                where: { id: checkIPN.vnp_TxnRef },
+                data: { status: checkIPN.isSuccess ? PaymentStatus.SUCCESS : PaymentStatus.FAILED },
+            });
 
-            //     return {
-            //         status: 'success',
-            //         message: 'success',
-            //         urlRedirect: txn.domain,
-            //     };
-            // } catch (error) {
-            //     throw error;
-            // }
             return {
-                status: 'success',
-                message: 'success',
-                urlRedirect: 'https://facebook.com',
+                rspCode: checkIPN.vnp_ResponseCode.toString(),
+                rspMessage: checkIPN.message,
             };
-            // return {
-            //     status: txn.status.toLowerCase(),
-            //     message: 'success',
-            //     urlRedirect: txn.domain,
-            // };
         } catch (error) {
             throw error;
         }
+    }
+
+    /**
+     * Handles the callback for the payment URL.
+     * @param data - The callback request data.
+     * @returns A promise that resolves to the callback response.
+     * @throws Throws an error if there is an issue with the callback.
+     */
+    async callbackPaymentUrl(data: ICallbackVnPayRequest): Promise<ICallbackVnPayResponse> {
+        this.logger.debug('Data callback: ', { props: data });
+
+        if (!data.isIpn) return await this.handleResultCallback(data);
+
+        return await this.handleCallbackIpn(data);
     }
 
     async getTransaction(data: IGetTransactionRequest): Promise<IGetTransactionResponse> {
