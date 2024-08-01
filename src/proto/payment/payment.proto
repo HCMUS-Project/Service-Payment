@@ -37,12 +37,15 @@ message CallbackVnpayRequest {
     string vnp_transaction_status = 10;
     string vnp_txn_ref = 11;
     string vnp_secure_hash = 12;
+    bool is_ipn = 13;
 }
 
 message CallBackVnpayResponse {
-    string message = 1;
-    string status = 2;
-    string url_redirect = 3;
+    optional string message = 1;
+    optional string status = 2;
+    optional string url_redirect = 3;
+    optional string rsp_code = 4;
+    optional string rsp_message = 5;
 }
 
 message GetTransactionRequest {
