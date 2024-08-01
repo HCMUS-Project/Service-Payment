@@ -80,8 +80,8 @@ export class PaymentService {
                 vnp_TxnRef: billId,
                 vnp_OrderInfo: dataPayment.description,
                 vnp_OrderType: orderType,
-                // vnp_ReturnUrl: dataPayment.vnpReturnUrl,
-                vnp_ReturnUrl: 'http://localhost:3000/',
+                vnp_ReturnUrl: dataPayment.vnpReturnUrl,
+                // vnp_ReturnUrl: 'http://localhost:3000/',
                 vnp_Locale: VnpLocale.VN,
             });
         } catch (error) {
