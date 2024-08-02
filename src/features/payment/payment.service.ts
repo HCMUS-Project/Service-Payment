@@ -102,8 +102,8 @@ export class PaymentService {
                             : dataPayment.orderBookingId[0],
                     user: user.email,
                     // domain: "https://facebook.com",
-                    domain: url.origin,
-                    // domain: dataPayment.vnpReturnUrl,
+                    // domain: url.origin,
+                    domain: dataPayment.vnpReturnUrl,
                     payment_method: dataPayment.paymentMethodId,
                 },
             });
