@@ -70,7 +70,10 @@ export class PaymentService {
 
         let url = new URL(dataPayment.vnpReturnUrl);
         let vnpReturnUrl = url.origin + url.pathname;
-        // vnpReturnUrl, (domain = dataPayment.vnpReturnUrl);
+        let domain = url.searchParams.get('domain');
+        this.logger.info('Logs for return url and domain', {
+            props: { returnUrl: vnpReturnUrl, domain: domain },
+        });
 
         let urlString = '';
         try {
@@ -80,7 +83,8 @@ export class PaymentService {
                 vnp_TxnRef: billId,
                 vnp_OrderInfo: dataPayment.description,
                 vnp_OrderType: orderType,
-                vnp_ReturnUrl: dataPayment.vnpReturnUrl,
+                // vnp_ReturnUrl: dataPayment.vnpReturnUrl,
+                vnp_ReturnUrl: vnpReturnUrl,
                 // vnp_ReturnUrl: 'http://localhost:3000/',
                 vnp_Locale: VnpLocale.VN,
             });
@@ -103,7 +107,7 @@ export class PaymentService {
                     user: user.email,
                     // domain: "https://facebook.com",
                     // domain: url.origin,
-                    domain: dataPayment.vnpReturnUrl,
+                    domain: domain,
                     payment_method: dataPayment.paymentMethodId,
                 },
             });
