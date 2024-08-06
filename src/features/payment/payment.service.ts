@@ -170,7 +170,7 @@ export class PaymentService {
             this.logger.debug('Check ipn: ', { props: checkIPN });
 
             await this.prismaService.transactions.update({
-                where: { id: checkIPN.vnp_TxnRef },
+                where: { bill_id: checkIPN.vnp_TxnRef },
                 data: { status: checkIPN.isSuccess ? PaymentStatus.SUCCESS : PaymentStatus.FAILED },
             });
 
