@@ -124,6 +124,8 @@ export class PaymentService {
         data: ICallbackVnPayRequest,
     ): Promise<ICallbackVnPayResponse> {
         try {
+            this.logger.info('Data callback txn: ', { props: data });
+
             const status =
                 data.vnpResponseCode === '00'
                     ? PaymentStatus.SUCCESS.toLowerCase()
@@ -146,6 +148,8 @@ export class PaymentService {
 
     private async handleCallbackIpn(data: ICallbackVnPayRequest): Promise<ICallbackVnPayResponse> {
         try {
+            this.logger.info('Data callback ipn: ', { props: data });
+
             const vnpay = await this.vnpayService.createVnpayService();
             const checkIPN = vnpay.verifyIpnCall({
                 vnp_Amount: data.vnpAmount,
@@ -165,7 +169,7 @@ export class PaymentService {
 
             this.logger.debug('Check ipn: ', { props: checkIPN });
 
-            this.prismaService.transactions.update({
+            await this.prismaService.transactions.update({
                 where: { id: checkIPN.vnp_TxnRef },
                 data: { status: checkIPN.isSuccess ? PaymentStatus.SUCCESS : PaymentStatus.FAILED },
             });
