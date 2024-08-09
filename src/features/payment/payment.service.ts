@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { VnPayFactoryService } from './vnpay.service';
-import { HashAlgorithm, VnpLocale, ProductCode, VNPayConfig } from 'src/util/vnpay/src';
+import { HashAlgorithm, VnpLocale, ProductCode, VNPayConfig, VNPay } from 'src/util/vnpay/src';
 import {
     ICallbackVnPayRequest,
     ICallbackVnPayResponse,
@@ -63,8 +63,12 @@ export class PaymentService {
             dataPayment.orderProductsId.length > 0 ? ProductCode.Health_Beauty : ProductCode.Other;
 
         // create vnpay service
-        // const vnpay = await this.vnpayService.createVnpayService(user.domain);
-        const vnpay = await this.vnpayService.createVnpayService();
+        let vnpay: VNPay;
+        if (user.role.toString() === getEnumKeyByEnumValue(Role, Role.TENANT)) {
+            vnpay = await this.vnpayService.createVnpayService();
+        } else {
+            vnpay = await this.vnpayService.createVnpayService(user.domain);
+        }
 
         const billId = this.vnpayService.generateBillId();
 
